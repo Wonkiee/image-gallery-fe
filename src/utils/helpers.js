@@ -1,5 +1,9 @@
 import { map, filter, find, isEmpty } from 'lodash';
 
+/**
+ * Generates coloumn, row count for a table
+ * @param  {Number} tableEntriesLength
+ */
 const getTableProperties = (tableEntriesLength) => {
   const nearestSq = Math.pow(Math.round(Math.sqrt(tableEntriesLength)), 2);
   const columnCount = Math.sqrt(nearestSq);
@@ -8,6 +12,12 @@ const getTableProperties = (tableEntriesLength) => {
   return {rowsCount: extraRowsNeeded + columnCount, columnCount: columnCount };
 }
 
+/**
+ * For requets payload to save images in db
+ * @param  {Object} checkBoxStatusMap
+ * @param  {Array} allImagesList
+ * @param  {Array} imageOrder
+ */
 const getRequestPayloadForImageSave = (checkBoxStatusMap, allImagesList, imageOrder) => {
   let checkedCheckBoxIds = [];
   map(checkBoxStatusMap, (status, id) => {

@@ -18,5 +18,5 @@ export const saveSelectedImages = (data) => {
 }
 
 export const updateSelectedImages = (userId, data)=>{
-  return axios.post(SERVICE_URL + endPoints.UPDATE_SELECTED_IMAGES + `/${userId}`, data);
+  return axios.patch(SERVICE_URL + endPoints.UPDATE_SELECTED_IMAGES + `/${userId}`, data);
 }

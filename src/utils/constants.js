@@ -18,7 +18,7 @@ export default {
     UNREACHABLE: 503,
   },
   IMAGE_GRID_PROPS: {
-    MAX_IMAGE_COUNT_ON_GRID: 5
+    MAX_IMAGE_COUNT_ON_GRID: 9
   }
 };
 

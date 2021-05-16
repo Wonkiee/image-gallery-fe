@@ -80,12 +80,14 @@ export default class FrontPage extends React.Component {
   render() {
     const title = !this.state.userExists ? `Select Images From the Grid. Maximum of ${maximumImageCountOnGrid} images can be selected`
       : "Image Gallery";
+    const subTitle = !this.state.userExists ? "images will be ordered in the way you select it by ticking the checkbox" : "";
     return (
       this.state.imageList.length ?
         <div>
           <div>
             <Form className="formProperties">
               <h3>{title}</h3>
+              <h4>{subTitle}</h4>
               <Button variant="primary" onClick={this.onSubmit} disabled={!this.state.selectedImageCount}> Continue </Button>{' '}
             </Form>
           </div>

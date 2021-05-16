@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, InputGroup, Button } from 'react-bootstrap'
 import { orderBy } from 'lodash';
-import { getAllImages, saveSelectedImages, getImageByUserId } from '../../services/imageService';
+import { getAllImages, saveSelectedImages, getImageByUserId, updateSelectedImages } from '../../services/imageService';
 import helpers from '../../utils/helpers';
 import constants from '../../utils/constants';
 import './frontPage.scss';
@@ -12,12 +12,13 @@ export default class FrontPage extends React.Component {
     super(props);
     this.state = {
       imageList: [],
+      allImagesList: [],
       selectedImageCount: 0,
       checkBoxStatusMap: {},
       disableCheckBoxes: false,
       imageOrder: [],
-      checkBoxesHidden: false,
-      userExists: false,
+      onGridPage: false,
+      showResetButton: false,
     };
     this.onCheck = this.onCheck.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -27,25 +28,25 @@ export default class FrontPage extends React.Component {
   componentDidMount() {
     getImageByUserId().then(response => {
       this.setState({ imageList: response.data });
-      this.setState({ userExists: true });
+      this.setState({ onGridPage: true });
+      this.setState({ showResetButton: true });
     })
     .catch((err) => {
       getAllImages()
       .then(resp => {
         this.setState({ imageList: resp.data });
+        this.setState({ allImagesList: resp.data });
       })
     });
   }
 
-  resetState = (imageList, checkBoxesHidden, userExists) => {
+  resetState = (imageList, onGridPage, showResetButton) => {
     this.setState({
       imageList: imageList,
       selectedImageCount: 0,
-      imageOrderNumber: 0,
-      checkBoxStatusMap: {},
       disableCheckBoxes: false,
-      checkBoxesHidden: checkBoxesHidden,
-      userExists: userExists
+      onGridPage: onGridPage,
+      showResetButton: showResetButton
     });
   }
 
@@ -66,29 +67,55 @@ export default class FrontPage extends React.Component {
   }
 
   onSubmit = () => {
-    saveSelectedImages(helpers.getRequestPayloadForImageSave(
+    const payload = helpers.getRequestPayloadForImageSave(
       this.state.checkBoxStatusMap,
       this.state.imageList,
       this.state.imageOrder
-    )).then(res => {
+    );
+    if (this.state.imageUpdate) {
+      return updateSelectedImages("testUser1", payload)
+      .then(res => {
+        getImageByUserId().then(resp => {
+          const selectedImages = resp.data;
+          orderBy(selectedImages, 'order');
+          this.resetState(selectedImages, true, true);
+        })
+      });
+    }
+    return saveSelectedImages(payload).then(res => {
       const selectedImages = res.data;
       orderBy(selectedImages.images, 'order');
       this.resetState(selectedImages.images, true, true);
     });
   }
 
+  onReset = () => {
+    const allImages = this.state.allImagesList;
+    if (!allImages || !allImages.length) {
+      return getAllImages()
+      .then(resp => {
+        this.setState({ allImagesList: resp.data });
+        this.setState({ imageUpdate: true });
+        this.resetState(resp.data, false, true);
+      })
+    }
+    this.setState({ imageUpdate: true });
+    return this.resetState(this.state.allImagesList, false, false, true);
+  }
+
   render() {
-    const title = !this.state.userExists ? `Select Images From the Grid. Maximum of ${maximumImageCountOnGrid} images can be selected`
+    const title = !this.state.onGridPage ? `Select Images From the Grid. Maximum of ${maximumImageCountOnGrid} images can be selected`
       : "Image Gallery";
-    const subTitle = !this.state.userExists ? "images will be ordered in the way you select it by ticking the checkbox" : "";
+    const subTitle = !this.state.onGridPage ? "images will be ordered in the way you select it by ticking the checkbox" : "";
     return (
-      this.state.imageList.length ?
+      this.state.imageList && this.state.imageList.length ?
         <div>
           <div>
             <Form className="formProperties">
               <h3>{title}</h3>
               <h4>{subTitle}</h4>
               <Button variant="primary" onClick={this.onSubmit} disabled={!this.state.selectedImageCount}> Continue </Button>{' '}
+              <Button variant="primary" onClick={this.onReset} disabled={!this.state.showResetButton}> Reset Selection </Button>{' '}
             </Form>
           </div>
             <div className="row">
@@ -96,14 +123,14 @@ export default class FrontPage extends React.Component {
                     <div className="row no-gutters">
                     {this.state.imageList.map((val, k) => {
                         return (
-                        <div className="col-sm-3 columnProperties" key={k}>
+                        val && <div className="col-sm-3 columnProperties" key={k}>
                             <img src={val.picture} className="imageProperties"/>
                             <InputGroup.Prepend>
                               <InputGroup.Checkbox
                                 onChange={this.onCheck}
                                 id={val.id}
                                 disabled={ !this.state.checkBoxStatusMap[val.id] && this.state.disableCheckBoxes }
-                                hidden={this.state.checkBoxesHidden}
+                                hidden={this.state.onGridPage}
                               />
                             </InputGroup.Prepend>
                         </div>)

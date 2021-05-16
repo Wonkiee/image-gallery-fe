@@ -20,7 +20,6 @@ const getTableProperties = (tableEntriesLength) => {
  */
 const getRequestPayloadForImageSave = (checkBoxStatusMap, allImagesList, imageOrder) => {
   let checkedCheckBoxIds = [];
-  console.log("checkBoxStatusMap ",checkBoxStatusMap)
   map(checkBoxStatusMap, (status, id) => {
     if (status) {
       checkedCheckBoxIds.push(id);
@@ -28,8 +27,6 @@ const getRequestPayloadForImageSave = (checkBoxStatusMap, allImagesList, imageOr
   });
   checkedCheckBoxIds = checkedCheckBoxIds.map(Number);
   imageOrder = imageOrder.map(Number);
-console.log("checkedCheckBoxIds", checkedCheckBoxIds);
-console.log("imageOrder", imageOrder);
   const imageObjectsList = filter(allImagesList, (image) => {
     return checkedCheckBoxIds.includes(image.id);
   });
